@@ -41,31 +41,8 @@ Landing page
 
 
 
-About page
-
-<img width="559" height="315" alt="image" src="https://github.com/user-attachments/assets/d42337ec-919c-49f4-ab64-7518c3aba1b3" />
 
 
-
-
-
-
-Login / registration page 
-<img width="574" height="323" alt="image" src="https://github.com/user-attachments/assets/d47c2545-52fc-405e-ba82-1601abcc4517" />
-
-
-
-
-
-Dashboard
-<img width="555" height="312" alt="image" src="https://github.com/user-attachments/assets/2db5e208-c08a-4777-a1c2-fe31acb1598c" />
-
-
-
-
-
-AQI Map
-<img width="570" height="312" alt="image" src="https://github.com/user-attachments/assets/ba0b508a-99e8-4b80-805f-665ff8398d11" />
 
 
 
