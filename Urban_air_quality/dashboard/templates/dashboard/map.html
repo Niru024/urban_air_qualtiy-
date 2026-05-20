@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Air Quality Dashboard</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#0df259",
+                "background-dark": "#102216",
+              }
+            }
+          }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; background: #0f172a; }
+        #map { position: absolute; top:0; bottom:0; width:100%; height:100vh; z-index:0; }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        .panel { z-index: 1000; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .panel:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.2); }
+
+        .btn-pollutant {
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .btn-pollutant.active {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .search-input {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        .search-input:focus {
+            background: white;
+
+            border-color: #10b981;
+        }
+
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        
+        /* Custom scrollbar for sidebar */
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        
+        /* Global Transitions */
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .page-transition {
+            animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        #dataPanel {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800 page-transition bg-background-dark">
+
+<div id="map"></div>
+
+<!-- TOP LEFT: BRANDING & SEARCH -->
+<div class="panel absolute left-6 top-6 w-80 glass rounded-3xl p-5">
+    <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-[#102216]">
+            <span class="material-symbols-outlined font-bold">eco</span>
+        </div>
+        <div>
+            <h1 class="font-800 text-lg leading-tight tracking-tight">UrbanAQI</h1>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Global Monitor</p>
+        </div>
+    </div>
+
+    <div class="relative group">
+        <input type="text" id="citySearch" placeholder="Search for a city..." 
+        class="search-input w-full py-3 pl-12 pr-4 rounded-2xl text-sm font-medium focus:outline-none">
+        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+    </div>
+
+    <div class="mt-6">
+        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Pollutant Focus</h3>
+        <div class="grid grid-cols-2 gap-2">
+            <button onclick="togglePollutant('pm25', this)" class="btn-pollutant active py-2 rounded-xl text-xs font-bold bg-white/50">PM2.5</button>
+            <button onclick="togglePollutant('pm10', this)" class="btn-pollutant py-2 rounded-xl text-xs font-bold bg-white/50">PM10</button>
+            <button onclick="togglePollutant('no2', this)" class="btn-pollutant py-2 rounded-xl text-xs font-bold bg-white/50 text-slate-500">NO2</button>
+            <button onclick="togglePollutant('so2', this)" class="btn-pollutant py-2 rounded-xl text-xs font-bold bg-white/50 text-slate-500">SO2</button>
+        </div>
+    </div>
+</div>
+
+<!-- RIGHT: DATA INSIGHTS -->
+<div id="dataPanel" class="panel absolute right-6 top-6 bottom-6 w-96 glass rounded-[2.5rem] p-7 flex flex-col">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h2 id="cityName" class="text-2xl font-800 tracking-tight">Mumbai</h2>
+            <p class="text-xs text-slate-500 font-medium">Station ID: #MU-4091</p>
+        </div>
+        <div class="w-12 h-12 glass rounded-full flex items-center justify-center text-slate-400 cursor-pointer">
+            <span class="material-symbols-outlined">more_vert</span>
+        </div>
+    </div>
+
+    <!-- MAIN SCORE -->
+    <div class="flex items-center gap-6 mb-8">
+        <div id="aqiBg" class="w-24 h-24 rounded-3xl bg-amber-100 flex flex-col items-center justify-center shadow-inner">
+            <span id="aqiVal" class="text-3xl font-900 text-amber-600">95</span>
+            <span class="text-[9px] font-bold text-amber-600/60 uppercase">AQI Index</span>
+        </div>
+        <div>
+            <p id="aqiStatus" class="text-xl font-bold text-amber-600">Moderate</p>
+            <p class="text-[11px] text-slate-500 leading-relaxed mt-1">Acceptable air quality for most. Sensitive groups may experience minor effects.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="bg-white/40 p-4 rounded-2xl">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="material-symbols-outlined text-[16px] text-blue-500">water_drop</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Humidity</span>
+            </div>
+            <p class="font-bold text-lg">64%</p>
+        </div>
+        <div class="bg-white/40 p-4 rounded-2xl">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="material-symbols-outlined text-[16px] text-orange-500">thermostat</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Temperature</span>
+            </div>
+            <p class="font-bold text-lg">29°C</p>
+        </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="flex-1 flex flex-col min-h-0">
+        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">24H AQI Trend</h3>
+        <div class="flex-1 bg-white/40 rounded-3xl p-4 mb-6">
+            <canvas id="trendChart"></canvas>
+        </div>
+        
+        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Composition</h3>
+        <div class="h-32 bg-white/40 rounded-3xl p-4">
+            <canvas id="compositionChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- BOTTOM LEFT: LEGEND -->
+<div class="panel absolute left-6 bottom-6 glass rounded-2xl p-4 w-64">
+    <h3 class="font-bold text-xs mb-3 text-slate-700">Health Guard Legend</h3>
+    <div class="space-y-2">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-[10px] font-bold text-slate-500">
+                <div class="legend-dot bg-emerald-500"></div> GOOD
+            </div>
+            <span class="text-[9px] text-slate-400">0 - 50</span>
+        </div>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-[10px] font-bold text-slate-500">
+                <div class="legend-dot bg-amber-400"></div> MODERATE
+            </div>
+            <span class="text-[9px] text-slate-400">51 - 100</span>
+        </div>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-[10px] font-bold text-slate-500">
+                <div class="legend-dot bg-orange-500"></div> UNHEALTHY
+            </div>
+            <span class="text-[9px] text-slate-400">101 - 150</span>
+        </div>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-[10px] font-bold text-slate-500">
+                <div class="legend-dot bg-rose-600"></div> CRITICAL
+            </div>
+            <span class="text-[9px] text-slate-400">151 - 200</span>
+        </div>
+    </div>
+</div>
+<!-- FAB TOGGLE -->
+<button id="togglePanelBtn" class="absolute right-6 bottom-6 w-14 h-14 bg-primary text-[#102216] rounded-full shadow-lg flex items-center justify-center z-[2000] hover:scale-110 hover:shadow-primary/40 transition-all active:scale-95 group">
+    <span class="material-symbols-outlined font-bold group-hover:rotate-180 transition-transform duration-500">query_stats</span>
+</button>
+
+<script>
+// --- CORE DATA ---
+const cities = {delhi: { name: "Delhi", lat: 28.6139, lon: 77.2090, aqi: 180 },
+  mumbai: { name: "Mumbai", lat: 19.0760, lon: 72.8777, aqi: 95 },
+  bengaluru: { name: "Bengaluru", lat: 12.9716, lon: 77.5946, aqi: 65 },
+  chennai: { name: "Chennai", lat: 13.0827, lon: 80.2707, aqi: 72 },
+  kolkata: { name: "Kolkata", lat: 22.5726, lon: 88.3639, aqi: 110 },
+
+  pune: { name: "Pune", lat: 18.5204, lon: 73.8567, aqi: 70 },
+  nagpur: { name: "Nagpur", lat: 21.1458, lon: 79.0882, aqi: 85 },
+  nashik: { name: "Nashik", lat: 19.9975, lon: 73.7898, aqi: 75 },
+  aurangabad: { name: "Aurangabad", lat: 19.8762, lon: 75.3433, aqi: 90 },
+
+  ahmedabad: { name: "Ahmedabad", lat: 23.0225, lon: 72.5714, aqi: 140 },
+  jaipur: { name: "Jaipur", lat: 26.9124, lon: 75.7873, aqi: 160 },
+  patna: { name: "Patna", lat: 25.5941, lon: 85.1376, aqi: 160 },
+  guwahati: { name: "Guwahati", lat: 26.1445, lon: 91.7362, aqi: 70 },
+
+  kochi: { name: "Kochi", lat: 9.9312, lon: 76.2673, aqi: 45 },
+  trivandrum: { name: "Trivandrum", lat: 8.5241, lon: 76.9366, aqi: 40 },
+  vizag: { name: "Visakhapatnam", lat: 17.6868, lon: 83.2185, aqi: 80 },
+  solapur:      { name: "Solapur", lat: 17.6599, lon: 75.9064, aqi: 95 },
+kolhapur:     { name: "Kolhapur", lat: 16.7050, lon: 74.2433, aqi: 65 },
+satara:       { name: "Satara", lat: 17.6805, lon: 73.9933, aqi: 60 },
+sangli:       { name: "Sangli", lat: 16.8524, lon: 74.5815, aqi: 70 },
+jalgaon:      { name: "Jalgaon", lat: 21.0077, lon: 75.5626, aqi: 100 },
+
+dhule:        { name: "Dhule", lat: 20.9042, lon: 74.7749, aqi: 95 },
+nanded:       { name: "Nanded", lat: 19.1383, lon: 77.3210, aqi: 90 },
+latur:        { name: "Latur", lat: 18.4088, lon: 76.5604, aqi: 85 },
+parbhani:     { name: "Parbhani", lat: 19.2608, lon: 76.7748, aqi: 88 },
+akola:        { name: "Akola", lat: 20.7002, lon: 77.0082, aqi: 92 },
+
+amravati:     { name: "Amravati", lat: 20.9374, lon: 77.7796, aqi: 90 },
+chandrapur:   { name: "Chandrapur", lat: 19.9615, lon: 79.2961, aqi: 120 },
+yavatmal:     { name: "Yavatmal", lat: 20.3888, lon: 78.1204, aqi: 95 },
+ratnagiri:    { name: "Ratnagiri", lat: 16.9902, lon: 73.3120, aqi: 55 },
+sindhudurg:   { name: "Sindhudurg", lat: 16.3492, lon: 73.5594, aqi: 50 },
+
+palghar:      { name: "Palghar", lat: 19.6967, lon: 72.7656, aqi: 75 },
+thane:        { name: "Thane", lat: 19.2183, lon: 72.9781, aqi: 110 },
+panvel:       { name: "Panvel", lat: 18.9886, lon: 73.1175, aqi: 105 },
+ulhasnagar:   { name: "Ulhasnagar", lat: 19.2215, lon: 73.1645, aqi: 115 },
+badlapur:     { name: "Badlapur", lat: 19.1552, lon: 73.2655, aqi: 108 },
+
+bhiwandi:     { name: "Bhiwandi", lat: 19.3002, lon: 73.0588, aqi: 120 },
+vasai:        { name: "Vasai", lat: 19.3919, lon: 72.8397, aqi: 100 },
+virar:        { name: "Virar", lat: 19.4564, lon: 72.7925, aqi: 98 },
+alibag:       { name: "Alibag", lat: 18.6414, lon: 72.8722, aqi: 60 },
+noida:        { name: "Noida", lat: 28.5355, lon: 77.3910, aqi: 165 },
+ghaziabad:    { name: "Ghaziabad", lat: 28.6692, lon: 77.4538, aqi: 190 },
+faridabad:    { name: "Faridabad", lat: 28.4089, lon: 77.3178, aqi: 175 },
+gurgaon:      { name: "Gurgaon", lat: 28.4595, lon: 77.0266, aqi: 170 },
+
+chandigarh:   { name: "Chandigarh", lat: 30.7333, lon: 76.7794, aqi: 60 },
+amritsar:     { name: "Amritsar", lat: 31.6340, lon: 74.8723, aqi: 125 },
+ludhiana:     { name: "Ludhiana", lat: 30.9010, lon: 75.8573, aqi: 135 },
+
+bhopal:       { name: "Bhopal", lat: 23.2599, lon: 77.4126, aqi: 95 },
+indore:       { name: "Indore", lat: 22.7196, lon: 75.8577, aqi: 90 },
+jabalpur:     { name: "Jabalpur", lat: 23.1815, lon: 79.9864, aqi: 100 },
+
+surat:        { name: "Surat", lat: 21.1702, lon: 72.8311, aqi: 105 },
+vadodara:     { name: "Vadodara", lat: 22.3072, lon: 73.1812, aqi: 98 },
+rajkot:       { name: "Rajkot", lat: 22.3039, lon: 70.8022, aqi: 100 },
+
+coimbatore:   { name: "Coimbatore", lat: 11.0168, lon: 76.9558, aqi: 55 },
+madurai:      { name: "Madurai", lat: 9.9252, lon: 78.1198, aqi: 65 },
+tiruchy:      { name: "Tiruchirappalli", lat: 10.7905, lon: 78.7047, aqi: 60 },
+
+bhubaneswar:  { name: "Bhubaneswar", lat: 20.2961, lon: 85.8245, aqi: 90 },
+cuttack:      { name: "Cuttack", lat: 20.4625, lon: 85.8830, aqi: 95 },
+
+ranchi:       { name: "Ranchi", lat: 23.3441, lon: 85.3096, aqi: 120 },
+dehradun:     { name: "Dehradun", lat: 30.3165, lon: 78.0322, aqi: 85 },
+shimla:       { name: "Shimla", lat: 31.1048, lon: 77.1734, aqi: 45 },
+
+agra: { name: "Agra", lat: 27.1767, lon: 78.0081, aqi: 150 },
+aligarh: { name: "Aligarh", lat: 27.8974, lon: 78.0880, aqi: 140 },
+allahabad: { name: "Prayagraj", lat: 25.4358, lon: 81.8463, aqi: 135 },
+bareilly: { name: "Bareilly", lat: 28.3670, lon: 79.4304, aqi: 145 },
+kanpur: { name: "Kanpur", lat: 26.4499, lon: 80.3319, aqi: 155 },
+lucknow: { name: "Lucknow", lat: 26.8467, lon: 80.9462, aqi: 150 },
+meerut: { name: "Meerut", lat: 28.9845, lon: 77.7064, aqi: 160 },
+moradabad: { name: "Moradabad", lat: 28.8386, lon: 78.7733, aqi: 158 },
+saharanpur: { name: "Saharanpur", lat: 29.9680, lon: 77.5552, aqi: 150 },
+varanasi: { name: "Varanasi", lat: 25.3176, lon: 82.9739, aqi: 140 },
+
+gorakhpur: { name: "Gorakhpur", lat: 26.7606, lon: 83.3732, aqi: 135 },
+jhansi: { name: "Jhansi", lat: 25.4484, lon: 78.5685, aqi: 130 },
+mathura: { name: "Mathura", lat: 27.4924, lon: 77.6737, aqi: 150 },
+firozabad: { name: "Firozabad", lat: 27.1592, lon: 78.3957, aqi: 142 },
+muzaffarnagar: { name: "Muzaffarnagar", lat: 29.4727, lon: 77.7085, aqi: 148 },
+
+udaipur: { name: "Udaipur", lat: 24.5854, lon: 73.7125, aqi: 110 },
+kota: { name: "Kota", lat: 25.2138, lon: 75.8648, aqi: 120 },
+ajmer: { name: "Ajmer", lat: 26.4499, lon: 74.6399, aqi: 115 },
+bikaner: { name: "Bikaner", lat: 28.0229, lon: 73.3119, aqi: 105 },
+jodhpur: { name: "Jodhpur", lat: 26.2389, lon: 73.0243, aqi: 110 },
+
+gwalior: { name: "Gwalior", lat: 26.2183, lon: 78.1828, aqi: 125 },
+ujjain: { name: "Ujjain", lat: 23.1765, lon: 75.7885, aqi: 100 },
+sagar: { name: "Sagar", lat: 23.8388, lon: 78.7378, aqi: 95 },
+satna: { name: "Satna", lat: 24.5770, lon: 80.8272, aqi: 98 },
+rewa: { name: "Rewa", lat: 24.5362, lon: 81.3042, aqi: 95 },
+
+tirupati: { name: "Tirupati", lat: 13.6288, lon: 79.4192, aqi: 70 },
+nellore: { name: "Nellore", lat: 14.4426, lon: 79.9865, aqi: 72 },
+kurnool: { name: "Kurnool", lat: 15.8281, lon: 78.0373, aqi: 75 },
+anantapur: { name: "Anantapur", lat: 14.6819, lon: 77.6006, aqi: 74 },
+kadapa: { name: "Kadapa", lat: 14.4673, lon: 78.8242, aqi: 76 },
+
+warangal: { name: "Warangal", lat: 17.9689, lon: 79.5941, aqi: 80 },
+karimnagar: { name: "Karimnagar", lat: 18.4386, lon: 79.1288, aqi: 82 },
+nizamabad: { name: "Nizamabad", lat: 18.6725, lon: 78.0941, aqi: 78 },
+khammam: { name: "Khammam", lat: 17.2473, lon: 80.1514, aqi: 76 },
+adilabad: { name: "Adilabad", lat: 19.6641, lon: 78.5320, aqi: 74 },
+
+mysuru: { name: "Mysuru", lat: 12.2958, lon: 76.6394, aqi: 55 },
+hubli: { name: "Hubli", lat: 15.3647, lon: 75.1240, aqi: 65 },
+dharwad: { name: "Dharwad", lat: 15.4589, lon: 75.0078, aqi: 60 },
+belagavi: { name: "Belagavi", lat: 15.8497, lon: 74.4977, aqi: 62 },
+ballari: { name: "Ballari", lat: 15.1394, lon: 76.9214, aqi: 70 },
+
+mangaluru: { name: "Mangaluru", lat: 12.9141, lon: 74.8560, aqi: 50 },
+shivamogga: { name: "Shivamogga", lat: 13.9299, lon: 75.5681, aqi: 55 },
+tumakuru: { name: "Tumakuru", lat: 13.3379, lon: 77.1173, aqi: 60 },
+davangere: { name: "Davangere", lat: 14.4644, lon: 75.9218, aqi: 65 },
+bidar: { name: "Bidar", lat: 17.9133, lon: 77.5301, aqi: 70 },
+
+trichy: { name: "Trichy", lat: 10.7905, lon: 78.7047, aqi: 60 },
+salem: { name: "Salem", lat: 11.6643, lon: 78.1460, aqi: 58 },
+vellore: { name: "Vellore", lat: 12.9165, lon: 79.1325, aqi: 62 },
+erode: { name: "Erode", lat: 11.3410, lon: 77.7172, aqi: 57 },
+tiruppur: { name: "Tiruppur", lat: 11.1085, lon: 77.3411, aqi: 59 },
+
+dhanbad: { name: "Dhanbad", lat: 23.7957, lon: 86.4304, aqi: 140 },
+bokaro: { name: "Bokaro", lat: 23.6693, lon: 86.1511, aqi: 135 },
+jamshedpur: { name: "Jamshedpur", lat: 22.8046, lon: 86.2029, aqi: 130 },
+hazaribagh: { name: "Hazaribagh", lat: 23.9966, lon: 85.3691, aqi: 120 },
+giridih: { name: "Giridih", lat: 24.1821, lon: 86.2990, aqi: 118 },
+
+silchar: { name: "Silchar", lat: 24.8333, lon: 92.7789, aqi: 70 },
+tezpur: { name: "Tezpur", lat: 26.6333, lon: 92.8000, aqi: 65 },
+jorhat: { name: "Jorhat", lat: 26.7465, lon: 94.2026, aqi: 68 },
+dibrugarh: { name: "Dibrugarh", lat: 27.4728, lon: 94.9120, aqi: 66 },
+tinsukia: { name: "Tinsukia", lat: 27.4924, lon: 95.3553, aqi: 70 },
+
+itanagar: { name: "Itanagar", lat: 27.0844, lon: 93.6053, aqi: 40 },
+aizawl: { name: "Aizawl", lat: 23.7271, lon: 92.7176, aqi: 38 },
+kohima: { name: "Kohima", lat: 25.6747, lon: 94.1100, aqi: 42 },
+imphal: { name: "Imphal", lat: 24.8170, lon: 93.9368, aqi: 45 },
+shillong: { name: "Shillong", lat: 25.5788, lon: 91.8933, aqi: 35 },
+
+gangtok: { name: "Gangtok", lat: 27.3389, lon: 88.6065, aqi: 30 },
+darjeeling: { name: "Darjeeling", lat: 27.0410, lon: 88.2663, aqi: 35 },
+siliguri: { name: "Siliguri", lat: 26.7271, lon: 88.3953, aqi: 70 },
+asansol: { name: "Asansol", lat: 23.6739, lon: 86.9524, aqi: 120 },
+durgapur: { name: "Durgapur", lat: 23.5204, lon: 87.3119, aqi: 115 }
+};
+
+// --- HELPERS ---
+function getAQIInfo(aqi) {
+    if (aqi <= 50) return { status: "Good", color: "#10b981" };
+    if (aqi <= 100) return { status: "Moderate", color: "#fbbf24" };
+    if (aqi <= 150) return { status: "Unhealthy for Sensitive Groups", color: "#f97316" };
+    if (aqi <= 200) return { status: "Unhealthy", color: "#e11d48" };
+    if (aqi <= 300) return { status: "Very Unhealthy", color: "#9333ea" };
+    return { status: "Hazardous", color: "#7f1d1d" };
+}
+
+// --- MAP INIT ---
+const map = L.map('map', { zoomControl: false }).setView([19.0760, 72.8777], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+}).addTo(map);
+
+// --- MARKERS ---
+Object.keys(cities).forEach(name => {
+    const city = cities[name];
+    const info = getAQIInfo(city.aqi);
+    const marker = L.circleMarker([city.lat, city.lon], {
+        radius: 12,
+        fillColor: info.color,
+        color: "#fff",
+        weight: 3,
+        fillOpacity: 0.9
+    }).addTo(map);
+
+    marker.bindTooltip(name, { permanent: false, direction: 'top' });
+    
+    marker.on('click', () => {
+        updateCityData(name);
+        map.flyTo([city.lat, city.lon], 9);
+    });
+});
+
+// --- CHARTS ---
+let trendChart, compChart;
+
+function initCharts() {
+    const ctxTrend = document.getElementById('trendChart').getContext('2d');
+    const ctxComp = document.getElementById('compositionChart').getContext('2d');
+
+    trendChart = new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+            labels: ['4AM', '8AM', '12PM', '4PM', '8PM', '12AM'],
+            datasets: [{
+                data: [60, 75, 95, 85, 110, 95],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { display: false },
+                x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#94a3b8' } }
+            }
+        }
+    });
+
+    compChart = new Chart(ctxComp, {
+        type: 'bar',
+        data: {
+            labels: ['PM2.5', 'PM10', 'NO2', 'CO', 'O3'],
+            datasets: [{
+                data: [45, 60, 25, 15, 30],
+                backgroundColor: ['#10b981', '#fbbf24', '#f97316', '#3b82f6', '#8b5cf6'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { display: false },
+                y: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
+            }
+        }
+    });
+}
+
+// --- LOGIC ---
+function updateCityData(name) {
+    const city = cities[name];
+    if (!city) return;
+    
+    const info = getAQIInfo(city.aqi);
+    
+    document.getElementById('cityName').innerText = city.name;
+    document.getElementById('aqiVal').innerText = city.aqi;
+    document.getElementById('aqiStatus').innerText = info.status;
+    
+    // Update Theme Colors
+    const valEl = document.getElementById('aqiVal');
+    const statusEl = document.getElementById('aqiStatus');
+    const bgEl = document.getElementById('aqiBg');
+    
+    valEl.style.color = info.color;
+    statusEl.style.color = info.color;
+    bgEl.style.backgroundColor = info.color + '15'; // 15% opacity
+
+    // Fake Chart Data Update
+    if (trendChart) {
+        trendChart.data.datasets[0].data = Array.from({length: 6}, () => Math.floor(Math.random() * 50) + (city.aqi - 20));
+        trendChart.data.datasets[0].borderColor = info.color;
+        trendChart.update();
+    }
+}
+
+function togglePollutant(type, btn) {
+    document.querySelectorAll('.btn-pollutant').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // In a real app, this would refresh the map layer
+}
+
+// Search Functionality
+document.getElementById('citySearch').addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    const match = Object.keys(cities).find(name => name.toLowerCase().includes(term));
+    if (match) {
+        updateCityData(match);
+        map.flyTo([cities[match].lat, cities[match].lon], 8);
+    }
+});
+
+window.onload = () => {
+    initCharts();
+    updateCityData("Mumbai");
+};
+
+// Panel Toggle Logic
+const dataPanel = document.getElementById('dataPanel');
+const toggleBtn = document.getElementById('togglePanelBtn');
+let isPanelOpen = true;
+
+toggleBtn.addEventListener('click', () => {
+    isPanelOpen = !isPanelOpen;
+    dataPanel.style.transform = isPanelOpen ? 'translateX(0)' : 'translateX(120%)';
+    dataPanel.style.opacity = isPanelOpen ? '1' : '0';
+    toggleBtn.innerHTML = isPanelOpen 
+        ? '<span class="material-symbols-outlined font-bold group-hover:rotate-180 transition-transform duration-500">query_stats</span>'
+        : '<span class="material-symbols-outlined font-bold group-hover:rotate-180 transition-transform duration-500">menu_open</span>';
+});
+</script>
+
+</body>
+</html>

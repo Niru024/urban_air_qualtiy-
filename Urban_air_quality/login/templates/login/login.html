@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Urban AQI - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0df259",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .page-transition {
+            animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex items-stretch page-transition">
+<!-- Left Side: Visual Panel -->
+<div class="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A lush green city park with modern sustainable architecture in the background" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuASUFm-C9UMOLRRcugiOioRwY_JakdMePCcJ3rwWkHsh3mQcXCIAE_kEOECuNEMVA-6ZyR1tjnGtrHNupWJhtTVg8jcfImdjryhlQL6nlTsY2uxe6NsT4numNzaZTqsO1zj_PGPZdUddvQGZOQu1z2vwBwQ77SKTAJ-c9EYI5mW47uzMT59COwBZyTRSkslUxgWvpQ9Eti4tiyPGYr886Ua_lHzX-2MekcX_mCfva8T5fVEmoPg9mVveCxBc-WA6DyZ8X0ItGiDIus');">
+</div>
+<!-- Gradient Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark/80 via-background-dark/20 to-transparent"></div>
+<!-- Branding/Tagline on Image -->
+<div class="absolute bottom-20 left-20 z-10 max-w-md">
+<div class="flex items-center gap-3 text-primary mb-6">
+<div class="size-10 bg-primary/20 backdrop-blur-md rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">eco</span>
+</div>
+<h2 class="text-white text-3xl font-bold leading-tight tracking-tight">Urban AQI</h2>
+</div>
+<h1 class="text-white text-5xl font-bold leading-tight mb-4">Breathing better, together.</h1>
+<p class="text-white/80 text-lg font-normal leading-relaxed">
+                Real-time air quality monitoring and risk alerts designed for a healthier urban life.
+            </p>
+</div>
+</div>
+<!-- Right Side: Login Form -->
+<div class="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 md:px-20 bg-white dark:bg-background-dark">
+<div class="w-full max-w-[440px]">
+<!-- Mobile Header (Hidden on Desktop) -->
+<div class="lg:hidden flex items-center gap-2 mb-12">
+<span class="material-symbols-outlined text-primary text-3xl">eco</span>
+<h2 class="text-[#111813] dark:text-white text-xl font-bold">Urban AQI</h2>
+</div>
+<div class="mb-10">
+<h1 class="text-[#111813] dark:text-white tracking-tight text-[32px] font-bold leading-tight mb-2">Welcome Back</h1>
+<p class="text-[#61896f] dark:text-white/60 text-base font-normal">Please enter your details to sign in.</p>
+</div>
+<!-- Success Message Display -->
+{% if success %}
+<div class="mb-6 p-4 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg text-green-700 dark:text-green-300 text-sm">
+{{ success }}
+</div>
+{% endif %}
+<!-- Error Message Display -->
+{% if error %}
+<div class="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300 text-sm">
+{{ error }}
+</div>
+{% endif %}
+<form class="space-y-5" method="POST" action="{% url 'login' %}">
+{% csrf_token %}
+<!-- Username Field -->
+<div class="flex flex-col gap-2">
+<label class="text-[#111813] dark:text-white text-sm font-medium leading-normal">Username</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#61896f] text-xl transition-colors peer-focus:text-primary">person</span>
+<input class="peer flex w-full rounded-lg text-[#111813] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#dbe6df] dark:border-white/10 bg-white dark:bg-white/5 h-14 placeholder:text-[#61896f] pl-12 pr-4 text-base font-normal transition-all hover:border-primary/50 hover:shadow-md" placeholder="Enter your username" type="text" name="username" required/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="flex flex-col gap-2">
+<label class="text-[#111813] dark:text-white text-sm font-medium leading-normal">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#61896f] text-xl transition-colors peer-focus:text-primary">lock</span>
+<input class="peer flex w-full rounded-lg text-[#111813] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#dbe6df] dark:border-white/10 bg-white dark:bg-white/5 h-14 placeholder:text-[#61896f] pl-12 pr-4 text-base font-normal transition-all hover:border-primary/50 hover:shadow-md" placeholder="••••••••" type="password" name="password" required/>
+</div>
+</div>
+<!-- Form Controls -->
+<div class="flex items-center justify-between py-2">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative flex items-center">
+<input class="peer h-5 w-5 rounded border-[#dbe6df] text-primary focus:ring-primary focus:ring-offset-0 transition-all cursor-pointer" type="checkbox" name="remember_me"/>
+</div>
+<span class="text-[#111813] dark:text-white/80 text-sm font-medium select-none">Remember Me</span>
+</label>
+<a class="text-primary hover:text-primary/80 text-sm font-semibold transition-colors" href="#">Forgot Password?</a>
+</div>
+<!-- Action Button -->
+<button class="w-full bg-primary hover:bg-primary/90 text-[#102216] h-14 rounded-lg font-bold text-base transition-all shadow-lg shadow-primary/20 mt-4" type="submit">
+                    Sign In
+                </button>
+</form>
+<!-- Secondary Action -->
+<div class="mt-10 pt-6 border-t border-[#f0f4f2] dark:border-white/5 text-center">
+<p class="text-[#61896f] dark:text-white/60 text-sm">
+                    Don't have an account? 
+                    <a class="text-primary hover:text-primary/80 font-bold ml-1 transition-colors" href="{% url 'register' %}">Sign up for an account</a>
+</p>
+</div>
+<!-- Footer Small Print -->
+<div class="mt-20 flex justify-center gap-6">
+<a class="text-xs text-[#61896f] dark:text-white/40 hover:text-[#111813] transition-colors" href="#">Privacy Policy</a>
+<a class="text-xs text-[#61896f] dark:text-white/40 hover:text-[#111813] transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+</div>
+{% load static %}
+
+<!-- Location Modal -->
+<div id="locationModal" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h3>Urban AQI wants to</h3>
+    <p>📍 Know your location</p>
+
+    <button onclick="requestLocation()">Allow while visiting the site</button>
+    <button onclick="requestLocation()">Allow this time</button>
+    <button onclick="closeModal()">Never allow</button>
+  </div>
+</div>
+
+<script src="{% static 'js/api.js' %}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById('loginForm');
+
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const submitBtn = document.getElementById('submitBtn');
+
+            errorDiv.classList.add('hidden');
+
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Signing In...';
+
+                const response = await loginUser(email, password);
+
+                // Redirect to your actual Django URL
+                window.location.href = '/aqi-map/';
+
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Login failed. Please try again.';
+                errorDiv.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In';
+            }
+        });
+    }
+
+});
+
+function openModal() {
+  document.getElementById("locationModal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("locationModal").style.display = "none";
+}
+
+function requestLocation() {
+  closeModal();
+
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by your browser");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+
+      console.log("Lat:", lat);
+      console.log("Lng:", lng);
+
+      // Store in localStorage (optional)
+      localStorage.setItem("user_lat", lat);
+      localStorage.setItem("user_lng", lng);
+
+      // Redirect after getting location
+      window.location.href = `/aqi-map/?lat=${lat}&lng=${lng}`;
+    },
+    (err) => {
+      alert("Location permission denied");
+    }
+  );
+}
+</script>
+</body></html>

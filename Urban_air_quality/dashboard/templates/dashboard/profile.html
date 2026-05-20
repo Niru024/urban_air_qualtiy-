@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Urban AQI - Profile</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0df259",
+                        "background-light": "#f5f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .profile-card {
+            transition-duration: 300ms;
+            transition-property: all;
+        }
+        .profile-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: rgba(13, 242, 89, 0.3);
+        }
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+            transition-duration: 300ms;
+            transition-property: all;
+        }
+        .stat-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .stat-card::before {
+            position: absolute;
+            content: '';
+            inset: 0;
+            background: linear-gradient(to right, rgba(13, 242, 89, 0.1), transparent);
+            opacity: 0;
+            transition-property: opacity;
+            transition-duration: 300ms;
+        }
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up {
+            animation: slide-up 0.5s ease-out;
+        }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .page-transition {
+            animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-[#111813] dark:text-white transition-colors duration-200">
+    <div class="relative flex h-screen w-full flex-col group/design-root overflow-hidden page-transition">
+        <div class="layout-container flex h-full grow flex-col">
+            <!-- Header -->
+            <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#dbe6df] dark:border-white/10 px-10 py-3 bg-white dark:bg-[#1a2e1f] z-10 shadow-sm">
+                <div class="flex items-center gap-8">
+                    <div class="flex items-center gap-4 text-[#111813] dark:text-primary">
+                        <div class="size-6">
+                            <span class="material-symbols-outlined text-3xl">air</span>
+                        </div>
+                        <h2 class="text-[#111813] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">
+                            Urban Air Quality</h2>
+                    </div>
+                    <nav class="hidden md:flex items-center gap-9">
+                        <a class="text-[#111813] dark:text-white/80 text-sm font-medium leading-normal hover:text-primary transition-colors"
+                            href="{% url 'dashboard' %}">Dashboard</a>
+                        <a class="text-[#111813] dark:text-white/80 text-sm font-medium leading-normal hover:text-primary transition-colors"
+                            href="{% url 'map' %}">Map</a>
+                        <a class="text-primary text-sm font-bold leading-normal border-b-2 border-primary pb-1"
+                            href="{% url 'profile' %}">Profile</a>
+                    </nav>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <div class="flex flex-1 overflow-hidden">
+                <main class="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
+                    <div class="max-w-5xl mx-auto flex flex-col gap-8">
+                        <!-- Page Title with Background -->
+                        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/20 p-8">
+                            <div class="flex flex-col gap-1">
+                                <p class="text-primary text-sm font-bold tracking-widest uppercase">Welcome Back</p>
+                                <h1 class="text-[#111813] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">
+                                    {{ user_name }}</h1>
+                                <p class="text-[#608a6e] text-base font-normal max-w-2xl">Manage your account information and preferences. Keep your profile updated to get the best experience.</p>
+                            </div>
+                            <div class="absolute top-0 right-0 -m-8 opacity-10">
+                                <span class="material-symbols-outlined text-9xl text-primary">account_circle</span>
+                            </div>
+                        </div>
+
+                        <!-- Main Profile Card -->
+                        <div class="bg-white dark:bg-[#1a2e1f] rounded-2xl border border-[#dbe6df] dark:border-white/5 shadow-sm overflow-hidden profile-card">
+                            <!-- Profile Header Section with Avatar -->
+                            <div class="relative h-32 bg-gradient-to-r from-primary/30 via-primary/20 to-transparent"></div>
+                            
+                            <div class="relative px-8 pb-8">
+                                <!-- Avatar positioned over gradient -->
+                                <div class="absolute -top-16 left-8 group/avatar cursor-pointer">
+                                    <div class="w-32 h-32 rounded-2xl bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center border-4 border-white dark:border-[#1a2e1f] shadow-xl transition-all duration-500 group-hover/avatar:scale-110 group-hover/avatar:shadow-primary/40 group-hover/avatar:rotate-3">
+                                        <span class="material-symbols-outlined text-white transition-transform duration-500 group-hover/avatar:scale-110" style="font-size: 80px;">account_circle</span>
+                                    </div>
+                                </div>
+
+                                <!-- User Details -->
+                                <div class="pt-20">
+                                    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                                        <div>
+                                            <h2 class="text-[#111813] dark:text-white text-3xl font-black leading-tight">{{ user_name }}</h2>
+                                            <p class="text-primary text-base font-bold mt-1">✓ Verified Member</p>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <span class="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-bold">Active Account</span>
+                                            <span class="px-3 py-1 bg-green-100/50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-full text-sm font-bold">Premium Member</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- User Information Grid -->
+                            <div class="px-8 py-8 border-t border-[#dbe6df] dark:border-white/10">
+                                <h3 class="text-[#111813] dark:text-white text-lg font-bold leading-tight mb-6">Personal Information</h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- Full Name Card -->
+                                    <div class="group flex flex-col gap-3 p-5 rounded-xl bg-gradient-to-br from-[#f0f5f1] to-[#e8f0eb] dark:from-white/5 dark:to-white/10 border border-[#dbe6df] dark:border-white/10 hover:border-primary/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 cursor-default">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                                                <span class="material-symbols-outlined text-primary text-xl">person</span>
+                                            </div>
+                                            <span class="text-[#608a6e] text-xs font-bold uppercase tracking-wider">Full Name</span>
+                                        </div>
+                                        <p class="text-[#111813] dark:text-white text-lg font-black">{{ user_name }}</p>
+                                    </div>
+
+                                    <!-- Email Card -->
+                                    <div class="group flex flex-col gap-3 p-5 rounded-xl bg-gradient-to-br from-[#f0f5f1] to-[#e8f0eb] dark:from-white/5 dark:to-white/10 border border-[#dbe6df] dark:border-white/10 hover:border-primary/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 cursor-default">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                                                <span class="material-symbols-outlined text-primary text-xl">mail</span>
+                                            </div>
+                                            <span class="text-[#608a6e] text-xs font-bold uppercase tracking-wider">Email Address</span>
+                                        </div>
+                                        <p class="text-[#111813] dark:text-white text-lg font-black break-all">{{ user_email }}</p>
+                                    </div>
+
+                                    <!-- User ID Card -->
+                                    <div class="group flex flex-col gap-3 p-5 rounded-xl bg-gradient-to-br from-[#f0f5f1] to-[#e8f0eb] dark:from-white/5 dark:to-white/10 border border-[#dbe6df] dark:border-white/10 hover:border-primary/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 cursor-default">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                                                <span class="material-symbols-outlined text-primary text-xl">badge</span>
+                                            </div>
+                                            <span class="text-[#608a6e] text-xs font-bold uppercase tracking-wider">Account ID</span>
+                                        </div>
+                                        <p class="text-[#111813] dark:text-white text-lg font-black">#{{ user_id }}</p>
+                                    </div>
+
+                                    <!-- Account Status Card -->
+                                    <div class="group flex flex-col gap-3 p-5 rounded-xl bg-gradient-to-br from-[#f0f5f1] to-[#e8f0eb] dark:from-white/5 dark:to-white/10 border border-[#dbe6df] dark:border-white/10 hover:border-primary/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 cursor-default">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-green-100/50 dark:bg-green-900/20 flex items-center justify-center flex-shrink-0">
+                                                <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-xl">verified</span>
+                                            </div>
+                                            <span class="text-[#608a6e] text-xs font-bold uppercase tracking-wider">Status</span>
+                                        </div>
+                                        <p class="text-[#111813] dark:text-white text-lg font-black flex items-center gap-2">
+                                            <span class="size-2 rounded-full bg-green-600 animate-pulse"></span>
+                                            Active
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="px-8 py-8 border-t border-[#dbe6df] dark:border-white/10 bg-gradient-to-r from-[#f0f5f1] to-transparent dark:from-white/5 dark:to-transparent flex gap-4 flex-col sm:flex-row">
+                                <a href="{% url 'dashboard' %}" class="flex-1 bg-primary hover:bg-primary/90 text-[#111813] h-12 rounded-xl font-bold text-base transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2 group">
+                                    <span class="material-symbols-outlined transform group-hover:translate-x-0.5 transition-transform">dashboard</span>
+                                    <span>Back to Dashboard</span>
+                                </a>
+                                <a href="{% url 'logout' %}" class="flex-1 bg-red-500 hover:bg-red-600 text-white h-12 rounded-xl font-bold text-base transition-all shadow-lg shadow-red-500/20 hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2 group">
+                                    <span class="material-symbols-outlined transform group-hover:translate-x-0.5 transition-transform">logout</span>
+                                    <span>Logout</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Stats Section -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Member Status Card -->
+                            <div class="stat-card group relative bg-white dark:bg-[#1a2e1f] rounded-2xl border border-[#dbe6df] dark:border-white/5 shadow-sm overflow-hidden p-6 flex flex-col gap-3">
+                                <div class="absolute top-0 right-0 -m-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <span class="material-symbols-outlined text-5xl text-primary">verified_user</span>
+                                </div>
+                                <div class="flex items-center justify-between relative z-10">
+                                    <span class="text-[#608a6e] text-xs font-bold uppercase tracking-wider">Member Status</span>
+                                    <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-primary">verified_user</span>
+                                    </div>
+                                </div>
+                                <p class="text-[#111813] dark:text-white text-3xl font-black">Active</p>
+                                <p class="text-[#608a6e] text-sm">Your account is in good standing</p>
+                                <div class="mt-2 h-1 bg-[#f0f5f1] dark:bg-white/10 rounded-full overflow-hidden">
+                                    <div class="h-full w-full bg-primary rounded-full"></div>
+                                </div>
+                            </div>
+
+                            <!-- Preferences Card -->
+                            <div class="stat-card group relative bg-white dark:bg-[#1a2e1f] rounded-2xl border border-[#dbe6df] dark:border-white/5 shadow-sm overflow-hidden p-6 flex flex-col gap-3">
+                                <div class="absolute top-0 right-0 -m-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <span class="material-symbols-outlined text-5xl text-primary">settings</span>
+                                </div>
+                                <div class="flex items-center justify-between relative z-10">
+                                    <span class="text-[#608a6e] text-xs font-bold uppercase tracking-wider">Preferences</span>
+                                    <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-primary">settings</span>
+                                    </div>
+                                </div>
+                                <p class="text-[#111813] dark:text-white text-3xl font-black">Configured</p>
+                                <p class="text-[#608a6e] text-sm">All settings are enabled</p>
+                                <div class="mt-2 h-1 bg-[#f0f5f1] dark:bg-white/10 rounded-full overflow-hidden">
+                                    <div class="h-full w-full bg-green-600 rounded-full"></div>
+                                </div>
+                            </div>
+
+                            <!-- Security Card -->
+                            <div class="stat-card group relative bg-white dark:bg-[#1a2e1f] rounded-2xl border border-[#dbe6df] dark:border-white/5 shadow-sm overflow-hidden p-6 flex flex-col gap-3">
+                                <div class="absolute top-0 right-0 -m-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <span class="material-symbols-outlined text-5xl text-primary">security</span>
+                                </div>
+                                <div class="flex items-center justify-between relative z-10">
+                                    <span class="text-[#608a6e] text-xs font-bold uppercase tracking-wider">Security</span>
+                                    <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-primary">security</span>
+                                    </div>
+                                </div>
+                                <p class="text-[#111813] dark:text-white text-3xl font-black">Secure</p>
+                                <p class="text-[#608a6e] text-sm">Your account is protected</p>
+                                <div class="mt-2 h-1 bg-[#f0f5f1] dark:bg-white/10 rounded-full overflow-hidden">
+                                    <div class="h-full w-full bg-blue-600 rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Info Section -->
+                        <div class="bg-gradient-to-r from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 border border-primary/20 rounded-2xl p-8">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-primary/30 flex items-center justify-center flex-shrink-0">
+                                    <span class="material-symbols-outlined text-primary text-2xl">info</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-[#111813] dark:text-white text-lg font-bold mb-2">Account Information</h3>
+                                    <p class="text-[#608a6e] text-sm">Your profile is complete and up to date. You have full access to all Urban AQI features including real-time monitoring, health alerts, and air quality predictions.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

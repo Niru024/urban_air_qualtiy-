@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Urban AQI - Register</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#0df259",
+                "background-light": "#f6f8f6",
+                "background-dark": "#102216",
+              },
+              fontFamily: {
+                "display": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+          },
+        }
+      </script>
+<style>
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .page-transition {
+            animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col text-[#111813] dark:text-white page-transition">
+<!-- Header / Navbar Component -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f4f2] dark:border-b-[#1f2922] px-10 py-3 bg-white dark:bg-background-dark">
+<div class="flex items-center gap-4 text-[#111813] dark:text-white">
+<div class="size-6 text-primary">
+<span class="material-symbols-outlined text-3xl">location_city</span>
+</div>
+<h2 class="text-[#111813] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Urban AQI</h2>
+</div>
+<div class="flex items-center gap-8">
+<div class="hidden md:flex items-center gap-9">
+<a class="text-[#111813] dark:text-white text-sm font-medium leading-normal hover:text-primary transition-colors" href="{% url 'landing_page' %}">Home</a>
+<a class="text-[#111813] dark:text-white text-sm font-medium leading-normal hover:text-primary transition-colors" href="{% url 'about' %}">About AQI</a>
+</div>
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-[#111813] text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Login</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex items-center justify-center px-4 py-12">
+<div class="max-w-[480px] w-full bg-white dark:bg-[#1a2e21] rounded-xl shadow-sm border border-[#dbe6df] dark:border-[#2a3f31] overflow-hidden">
+<!-- Headline Section -->
+<div class="pt-10 px-8 text-center">
+<h1 class="text-[#111813] dark:text-white tracking-tight text-[32px] font-bold leading-tight pb-2">Join Urban AQI</h1>
+<p class="text-[#61896f] dark:text-[#a1b8a9] text-base font-normal leading-normal">Stay informed and stay safe with real-time air quality alerts.</p>
+</div>
+<!-- Error Message Display -->
+{% if error %}
+<div class="mx-8 mt-6 p-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300 text-sm">
+{{ error }}
+</div>
+{% endif %}
+<!-- Form Section -->
+<form class="p-8 flex flex-col gap-5" method="POST" action="{% url 'register' %}">
+{% csrf_token %}
+<!-- Full Name Field -->
+<div class="flex flex-col gap-2">
+<label class="text-[#111813] dark:text-white text-sm font-medium leading-normal">Full Name</label>
+<input class="form-input flex w-full rounded-lg text-[#111813] dark:text-white focus:outline-0 focus:ring-1 focus:ring-primary border border-[#dbe6df] dark:border-[#2a3f31] bg-white dark:bg-[#102216] h-12 placeholder:text-[#61896f] p-4 text-base font-normal transition-all hover:border-primary/50 hover:shadow-md" placeholder="Enter your full name" type="text" name="name" required/>
+</div>
+<!-- Email Address Field -->
+<div class="flex flex-col gap-2">
+<label class="text-[#111813] dark:text-white text-sm font-medium leading-normal">Email Address</label>
+<input class="form-input flex w-full rounded-lg text-[#111813] dark:text-white focus:outline-0 focus:ring-1 focus:ring-primary border border-[#dbe6df] dark:border-[#2a3f31] bg-white dark:bg-[#102216] h-12 placeholder:text-[#61896f] p-4 text-base font-normal transition-all hover:border-primary/50 hover:shadow-md" placeholder="e.g. name@example.com" type="email" name="email" required/>
+</div>
+<!-- Password Field -->
+<div class="flex flex-col gap-2">
+<label class="text-[#111813] dark:text-white text-sm font-medium leading-normal">Password</label>
+<div class="relative">
+<input class="form-input flex w-full rounded-lg text-[#111813] dark:text-white focus:outline-0 focus:ring-1 focus:ring-primary border border-[#dbe6df] dark:border-[#2a3f31] bg-white dark:bg-[#102216] h-12 placeholder:text-[#61896f] p-4 text-base font-normal transition-all hover:border-primary/50 hover:shadow-md" placeholder="Create a strong password" type="password" name="password" required/>
+<span class="material-symbols-outlined absolute right-4 top-3 text-[#61896f] cursor-pointer hover:text-primary transition-colors">visibility</span>
+</div>
+</div>
+<!-- Default City Dropdown -->
+<div class="flex flex-col gap-2">
+<label class="text-[#111813] dark:text-white text-sm font-medium leading-normal">Select Your Default City</label>
+<div class="relative">
+<select class="form-select flex w-full rounded-lg text-[#111813] dark:text-white focus:outline-0 focus:ring-1 focus:ring-primary border border-[#dbe6df] dark:border-[#2a3f31] bg-white dark:bg-[#102216] h-12 pl-4 pr-10 text-base font-normal transition-all hover:border-primary/50 hover:shadow-md" name="city" id="city">
+
+<option value="" disabled selected>Select a State</option>
+
+<option value="andhra-pradesh">Andhra Pradesh, India</option>
+<option value="arunachal-pradesh">Arunachal Pradesh, India</option>
+<option value="assam">Assam, India</option>
+<option value="bihar">Bihar, India</option>
+<option value="chhattisgarh">Chhattisgarh, India</option>
+<option value="goa">Goa, India</option>
+<option value="gujarat">Gujarat, India</option>
+<option value="haryana">Haryana, India</option>
+<option value="himachal-pradesh">Himachal Pradesh, India</option>
+<option value="jharkhand">Jharkhand, India</option>
+<option value="karnataka">Karnataka, India</option>
+<option value="kerala">Kerala, India</option>
+<option value="madhya-pradesh">Madhya Pradesh, India</option>
+<option value="maharashtra">Maharashtra, India</option>
+<option value="manipur">Manipur, India</option>
+<option value="meghalaya">Meghalaya, India</option>
+<option value="mizoram">Mizoram, India</option>
+<option value="nagaland">Nagaland, India</option>
+<option value="odisha">Odisha, India</option>
+<option value="punjab">Punjab, India</option>
+<option value="rajasthan">Rajasthan, India</option>
+<option value="sikkim">Sikkim, India</option>
+<option value="tamil-nadu">Tamil Nadu, India</option>
+<option value="telangana">Telangana, India</option>
+<option value="tripura">Tripura, India</option>
+<option value="uttar-pradesh">Uttar Pradesh, India</option>
+<option value="uttarakhand">Uttarakhand, India</option>
+<option value="west-bengal">West Bengal, India</option>
+
+</select>
+<span class="material-symbols-outlined absolute right-4 top-3 text-[#61896f] pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Terms and Conditions Checkbox -->
+<div class="flex items-start gap-3 py-2">
+<input class="mt-1 size-4 rounded border-[#dbe6df] text-primary focus:ring-primary" id="terms" type="checkbox"/>
+<label class="text-sm text-[#111813] dark:text-[#a1b8a9] leading-tight" for="terms">
+                        I agree to the <a class="text-primary hover:underline font-medium" href="#">Terms and Conditions</a> and the <a class="text-primary hover:underline font-medium" href="#">Privacy Policy</a>.
+                    </label>
+</div>
+<!-- Create Account Button -->
+<button class="flex w-full cursor-pointer items-center justify-center rounded-lg h-14 px-4 bg-primary text-[#111813] text-base font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity mt-2" type="submit">
+                    Create Account
+                </button>
+<!-- Redirect to Login -->
+<div class="mt-4 text-center">
+<p class="text-sm text-[#61896f] dark:text-[#a1b8a9]">
+                        Already have an account? 
+                        <a class="text-primary font-bold hover:underline ml-1" href="{% url 'login' %}">Login</a>
+</p>
+</div>
+</form>
+</div>
+</main>
+<!-- Simple Footer -->
+<footer class="py-8 text-center text-[#61896f] dark:text-[#a1b8a9] text-xs">
+        © 2023 Urban AQI System. All rights reserved. 
+        <div class="mt-2 flex justify-center gap-4">
+<a class="hover:text-primary" href="#">Help Center</a>
+<a class="hover:text-primary" href="#">Status</a>
+<a class="hover:text-primary" href="#">API</a>
+</div>
+</footer>
+</body></html>

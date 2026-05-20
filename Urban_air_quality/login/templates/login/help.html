@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AQI Help and Support Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.70/build/spline-viewer.js"></script>
+
+<style>
+  * { box-sizing: border-box; }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Inter', sans-serif;
+    color: white;
+    background: #091510;
+  }
+
+  /* ── Spline full-page fixed background ── */
+  #spline-bg {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  #spline-bg spline-viewer {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  /* Cover the Spline watermark */
+  #spline-logo-cover {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 200px; height: 60px;
+    background: #091510;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* 20% dark tint — just enough for readability */
+  #spline-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.20);
+  }
+
+  /* App sits above everything, fully transparent */
+  #app {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+  }
+  #app header, #app main, #app footer, #app section {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Cards — transparent, border only */
+  .card {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 0.875rem;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(13,242,89,0.45);
+    box-shadow: 0 16px 40px rgba(13,242,89,0.10);
+  }
+
+  /* Article list rows */
+  .article-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-radius: 0.625rem;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: transparent;
+    text-decoration: none;
+    transition: border-color 0.2s ease;
+  }
+  .article-row:hover { border-color: #0df259; }
+
+  /* Contact buttons */
+  .contact-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255,255,255,0.13);
+    background: transparent;
+    color: white;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+  .contact-btn:hover { border-color: #0df259; }
+
+  /* Form fields — transparent with white border */
+  .field {
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 0.5rem;
+    padding: 0.65rem 0.9rem;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field:focus { border-color: #0df259; }
+  .field option { background: #0c1a10; color: white; }
+  .field::placeholder { color: rgba(255,255,255,0.35); }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .anim    { animation: fadeUp 0.65s ease both; }
+  .d1 { animation-delay: 0.05s; }
+  .d2 { animation-delay: 0.15s; }
+  .d3 { animation-delay: 0.25s; }
+
+  /* Search bar */
+  .search-bar {
+    display: flex;
+    height: 4rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .search-bar input {
+    flex: 1;
+    background: rgba(255,255,255,0.07);
+    border: none;
+    outline: none;
+    padding: 0 1.25rem;
+    font-size: 1rem;
+    color: white;
+    font-family: 'Inter', sans-serif;
+  }
+  .search-bar input::placeholder { color: rgba(255,255,255,0.40); }
+  .search-bar .search-icon {
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.5);
+  }
+  .search-bar button {
+    background: #0df259;
+    color: #102216;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    padding: 0 2rem;
+    border: none;
+    cursor: pointer;
+    transition: filter 0.2s;
+  }
+  .search-bar button:hover { filter: brightness(1.12); }
+
+  /* Upload dropzone */
+  .dropzone {
+    border: 2px dashed rgba(255,255,255,0.18);
+    border-radius: 0.625rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.45);
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .dropzone:hover { border-color: #0df259; }
+</style>
+</head>
+
+<body>
+
+  <!-- ① Spline 3D full-page background -->
+  <div id="spline-bg">
+    <spline-viewer url="https://prod.spline.design/d8ByQimz52s62fJx/scene.splinecode"></spline-viewer>
+    <div id="spline-logo-cover"></div>
+  </div>
+
+  <!-- ② Minimal dark tint -->
+  <div id="spline-overlay"></div>
+
+  <!-- ③ Page content — fully transparent -->
+  <div id="app">
+
+    <!-- NAV -->
+    <header style="position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,0.10);padding:0.75rem 1rem 0.75rem;">
+      <div style="max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <span class="material-symbols-outlined" style="font-size:2rem;color:#0df259;">eco</span>
+          <span style="font-size:1.2rem;font-weight:800;color:white;">Urban AQI</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:2rem;">
+          <nav style="display:flex;gap:2rem;">
+            <a href="/" style="color:white;font-weight:600;font-size:0.875rem;text-decoration:none;" onmouseover="this.style.color='#0df259'" onmouseout="this.style.color='white'">Home</a>
+            <a href="{% url 'about' %}" style="color:white;font-weight:600;font-size:0.875rem;text-decoration:none;" onmouseover="this.style.color='#0df259'" onmouseout="this.style.color='white'">About</a>
+            <a href="{% url 'help' %}" style="color:white;font-weight:600;font-size:0.875rem;text-decoration:none;" onmouseover="this.style.color='#0df259'" onmouseout="this.style.color='white'">Help</a>
+          </nav>
+          <a href="{% url 'login' %}" style="background:#0df259;color:#102216;font-weight:700;font-size:0.875rem;padding:0.5rem 1.5rem;border-radius:0.5rem;text-decoration:none;" onmouseover="this.style.filter='brightness(1.12)'" onmouseout="this.style.filter='brightness(1)'">Login</a>
+        </div>
+      </div>
+    </header>
+
+    <main style="flex:1;">
+
+      <!-- HERO -->
+      <section style="padding:5rem 1rem 4rem;">
+        <div style="max-width:800px;margin:0 auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2rem;">
+          <div class="anim d1">
+            <h1 style="font-size:clamp(2.25rem,6vw,3.75rem);font-weight:900;line-height:1.1;color:white;margin:0 0 1rem;">
+              How can we help you?
+            </h1>
+            <p style="color:#d1fae5;font-size:1.1rem;line-height:1.65;margin:0;">
+              Search our knowledge base for AQI guides, health tips, and technical support to stay informed and safe.
+            </p>
+          </div>
+          <div class="search-bar anim d2" style="width:100%;max-width:640px;">
+            <div class="search-icon"><span class="material-symbols-outlined">search</span></div>
+            <input type="text" placeholder="Search for articles, guides, or troubleshooting..."/>
+            <button>Search</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CATEGORY GRID -->
+      <section style="max-width:1200px;margin:0 auto;padding:0 1rem 5rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;">
+          <h2 style="font-size:1.75rem;font-weight:800;color:white;margin:0;">Browse by Category</h2>
+          <span style="color:#0df259;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:0.25rem;">
+            View all <span class="material-symbols-outlined">arrow_forward</span>
+          </span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;">
+
+          <div class="card anim d1" style="padding:2rem;display:flex;flex-direction:column;gap:1rem;cursor:pointer;">
+            <div style="width:3.5rem;height:3.5rem;border-radius:0.625rem;display:flex;align-items:center;justify-content:center;border:1px solid rgba(13,242,89,0.3);color:#0df259;">
+              <span class="material-symbols-outlined" style="font-size:1.75rem;">rocket_launch</span>
+            </div>
+            <div>
+              <h3 style="color:white;font-size:1.1rem;font-weight:700;margin:0 0 0.4rem;">Getting Started</h3>
+              <p style="color:#9ca3af;font-size:0.875rem;line-height:1.55;margin:0;">Essential setup guides and onboarding for new system users.</p>
+            </div>
+          </div>
+
+          <div class="card anim d2" style="padding:2rem;display:flex;flex-direction:column;gap:1rem;cursor:pointer;">
+            <div style="width:3.5rem;height:3.5rem;border-radius:0.625rem;display:flex;align-items:center;justify-content:center;border:1px solid rgba(13,242,89,0.3);color:#0df259;">
+              <span class="material-symbols-outlined" style="font-size:1.75rem;">air</span>
+            </div>
+            <div>
+              <h3 style="color:white;font-size:1.1rem;font-weight:700;margin:0 0 0.4rem;">Understanding AQI</h3>
+              <p style="color:#9ca3af;font-size:0.875rem;line-height:1.55;margin:0;">Deep dive into Air Quality Index scales, metrics, and global standards.</p>
+            </div>
+          </div>
+
+          <div class="card anim d3" style="padding:2rem;display:flex;flex-direction:column;gap:1rem;cursor:pointer;">
+            <div style="width:3.5rem;height:3.5rem;border-radius:0.625rem;display:flex;align-items:center;justify-content:center;border:1px solid rgba(13,242,89,0.3);color:#0df259;">
+              <span class="material-symbols-outlined" style="font-size:1.75rem;">precision_manufacturing</span>
+            </div>
+            <div>
+              <h3 style="color:white;font-size:1.1rem;font-weight:700;margin:0 0 0.4rem;">Sensor Data &amp; Accuracy</h3>
+              <p style="color:#9ca3af;font-size:0.875rem;line-height:1.55;margin:0;">Learn how we measure air quality and ensure high-precision data.</p>
+            </div>
+          </div>
+
+          <div class="card anim d1" style="padding:2rem;display:flex;flex-direction:column;gap:1rem;cursor:pointer;">
+            <div style="width:3.5rem;height:3.5rem;border-radius:0.625rem;display:flex;align-items:center;justify-content:center;border:1px solid rgba(13,242,89,0.3);color:#0df259;">
+              <span class="material-symbols-outlined" style="font-size:1.75rem;">health_and_safety</span>
+            </div>
+            <div>
+              <h3 style="color:white;font-size:1.1rem;font-weight:700;margin:0 0 0.4rem;">Health &amp; Safety Tips</h3>
+              <p style="color:#9ca3af;font-size:0.875rem;line-height:1.55;margin:0;">Expert actionable advice tailored for your local air quality levels.</p>
+            </div>
+          </div>
+
+          <div class="card anim d2" style="padding:2rem;display:flex;flex-direction:column;gap:1rem;cursor:pointer;">
+            <div style="width:3.5rem;height:3.5rem;border-radius:0.625rem;display:flex;align-items:center;justify-content:center;border:1px solid rgba(13,242,89,0.3);color:#0df259;">
+              <span class="material-symbols-outlined" style="font-size:1.75rem;">security</span>
+            </div>
+            <div>
+              <h3 style="color:white;font-size:1.1rem;font-weight:700;margin:0 0 0.4rem;">Account &amp; Privacy</h3>
+              <p style="color:#9ca3af;font-size:0.875rem;line-height:1.55;margin:0;">Manage your profile, security settings, and data privacy rights.</p>
+            </div>
+          </div>
+
+          <div class="card anim d3" style="padding:2rem;display:flex;flex-direction:column;gap:1rem;cursor:pointer;">
+            <div style="width:3.5rem;height:3.5rem;border-radius:0.625rem;display:flex;align-items:center;justify-content:center;border:1px solid rgba(13,242,89,0.3);color:#0df259;">
+              <span class="material-symbols-outlined" style="font-size:1.75rem;">build</span>
+            </div>
+            <div>
+              <h3 style="color:white;font-size:1.1rem;font-weight:700;margin:0 0 0.4rem;">Troubleshooting</h3>
+              <p style="color:#9ca3af;font-size:0.875rem;line-height:1.55;margin:0;">Quick fixes for app glitches, notification issues, and hardware sync.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ARTICLES + TICKET -->
+      <section style="max-width:1200px;margin:0 auto;padding:0 1rem 5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:3rem;align-items:start;">
+
+        <!-- Trending Articles -->
+        <div>
+          <h2 style="font-size:1.5rem;font-weight:800;color:white;margin:0 0 1.5rem;display:flex;align-items:center;gap:0.5rem;">
+            <span class="material-symbols-outlined" style="color:#0df259;">trending_up</span> Trending Articles
+          </h2>
+          <div style="display:flex;flex-direction:column;gap:0.75rem;">
+            <a class="article-row" href="#"><span style="color:white;font-weight:500;font-size:0.95rem;">How to read the AQI forecast graph</span><span class="material-symbols-outlined" style="color:rgba(255,255,255,0.4);">chevron_right</span></a>
+            <a class="article-row" href="#"><span style="color:white;font-weight:500;font-size:0.95rem;">Best practices for home air purifiers</span><span class="material-symbols-outlined" style="color:rgba(255,255,255,0.4);">chevron_right</span></a>
+            <a class="article-row" href="#"><span style="color:white;font-weight:500;font-size:0.95rem;">Understanding PM2.5 vs PM10</span><span class="material-symbols-outlined" style="color:rgba(255,255,255,0.4);">chevron_right</span></a>
+            <a class="article-row" href="#"><span style="color:white;font-weight:500;font-size:0.95rem;">Configuring real-time alert notifications</span><span class="material-symbols-outlined" style="color:rgba(255,255,255,0.4);">chevron_right</span></a>
+            <a class="article-row" href="#"><span style="color:white;font-weight:500;font-size:0.95rem;">How to recalibrate your personal sensor</span><span class="material-symbols-outlined" style="color:rgba(255,255,255,0.4);">chevron_right</span></a>
+          </div>
+        </div>
+
+        <!-- Submit a Ticket -->
+        <div class="card" style="padding:2rem;">
+          <h2 style="color:white;font-size:1.5rem;font-weight:800;margin:0 0 0.4rem;">Submit a Ticket</h2>
+          <p style="color:#9ca3af;font-size:0.875rem;margin:0 0 1.5rem;">Can't find what you're looking for? Let our support team help you.</p>
+          <form style="display:flex;flex-direction:column;gap:1.25rem;">
+            <div style="display:flex;flex-direction:column;gap:0.4rem;">
+              <label style="font-size:0.8rem;font-weight:700;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.05em;">Issue Category</label>
+              <select class="field">
+                <option>Technical Issue</option>
+                <option>Data Inaccuracy</option>
+                <option>Account Support</option>
+                <option>Feature Request</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.4rem;">
+              <label style="font-size:0.8rem;font-weight:700;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.05em;">Describe your problem</label>
+              <textarea class="field" rows="4" placeholder="Provide as much detail as possible..."></textarea>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.4rem;">
+              <label style="font-size:0.8rem;font-weight:700;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.05em;">Attachments (optional)</label>
+              <div class="dropzone">
+                <span class="material-symbols-outlined" style="font-size:2rem;margin-bottom:0.4rem;">cloud_upload</span>
+                <span style="font-size:0.8rem;">Drag and drop or click to upload</span>
+              </div>
+            </div>
+            <button type="button" style="background:#0df259;color:#102216;padding:0.85rem;border-radius:0.5rem;font-weight:700;font-family:'Inter',sans-serif;font-size:1rem;border:none;cursor:pointer;transition:filter 0.2s;" onmouseover="this.style.filter='brightness(1.12)'" onmouseout="this.style.filter='brightness(1)'">
+              Submit
+            </button>
+          </form>
+        </div>
+
+      </section>
+
+      <!-- STILL NEED HELP -->
+      <section style="max-width:1200px;margin:0 auto;padding:0 1rem 5rem;border-top:1px solid rgba(255,255,255,0.08);padding-top:4rem;">
+        <div style="text-align:center;max-width:600px;margin:0 auto 2.5rem;">
+          <h2 style="font-size:2rem;font-weight:800;color:white;margin:0 0 0.75rem;">Still need help?</h2>
+          <p style="color:#9ca3af;font-size:1rem;margin:0;">Our support agents are available around the clock to assist you with any inquiries or technical issues.</p>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;">
+          <button class="contact-btn">
+            <span class="material-symbols-outlined" style="color:#0df259;">chat</span> Start Live Chat
+          </button>
+          <button class="contact-btn">
+            <span class="material-symbols-outlined" style="color:#0df259;">mail</span> Email Us
+          </button>
+          <button class="contact-btn">
+            <span class="material-symbols-outlined" style="color:#0df259;">call</span> Request Callback
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer style="border-top:1px solid rgba(255,255,255,0.08);padding:2.5rem 1rem;">
+      <div style="max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1.5rem;">
+        <div style="display:flex;align-items:center;gap:0.5rem;color:rgba(255,255,255,0.45);font-size:0.875rem;">
+          <span class="material-symbols-outlined">aq</span>
+          <span>© 2026 Urban Air Quality Risk System. All rights reserved.</span>
+        </div>
+        <div style="display:flex;gap:2rem;">
+          <a href="#" style="color:rgba(255,255,255,0.45);font-size:0.875rem;text-decoration:none;" onmouseover="this.style.color='#0df259'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">Privacy Policy</a>
+          <a href="#" style="color:rgba(255,255,255,0.45);font-size:0.875rem;text-decoration:none;" onmouseover="this.style.color='#0df259'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">Terms of Service</a>
+          <a href="#" style="color:rgba(255,255,255,0.45);font-size:0.875rem;text-decoration:none;" onmouseover="this.style.color='#0df259'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">Cookie Settings</a>
+        </div>
+      </div>
+    </footer>
+
+  </div><!-- #app -->
+
+</body>
+</html>
